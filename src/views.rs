@@ -350,16 +350,6 @@ impl RuleView {
         )?;
 
         if settings::INTERCEPTABLE_METHODS.contains(&method) && is_json_request{
-            println!("[+] Is interceptable!");
-
-            println!(
-                "[+] {:?} {:?} {:?} {:?}",
-                req_uri.to_string(),
-                req_uri.query().map(|o|o.to_owned()),
-                method.clone(),
-                request_body.clone()
-            );
-
             let body = request_body.clone().trim().to_owned();
 
             match MockingRule::find(
