@@ -28,7 +28,7 @@ impl RuleView {
             Some(field) if !field.is_string() => error_messages.push(
                 format!("{} must be a string", field_name)
             ),
-            Some(field) => output = Some(field.as_str().unwrap_or("/").to_owned()),
+            Some(field) => output = Some(field.as_str().unwrap_or_else(||"/").to_owned()),
             None => error_messages.push(format!("Field {} is required", field_name))
         };
         output
@@ -416,18 +416,14 @@ impl RuleView {
             );
         }
         
-        match client.request(proxy_request).await {
-            Ok(mut r) => {
-                r.headers_mut().insert(
-                    "X-Mocked", HeaderValue::from_static("true")
-                );
-                return Ok(r);
-            },
-            Err(e) => {
-                return Ok(
-                    Response::new(Body::from(e.to_string()))
-                );
-            }
-        }
+        Ok(
+            client.request(proxy_request).await.map_err(
+                |error|
+                    HTTPResponse{
+                        status_code: StatusCode::GATEWAY_TIMEOUT,
+                        body: json_message(&error.to_string())
+                    }
+            )?
+        )
     }
 }
