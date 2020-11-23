@@ -1,0 +1,16 @@
+[package]
+name = "rockery"
+version = "0.1.0"
+authors = ["Fusion2222"]
+edition = "2018"
+description = "Rust based Mocking Server"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde_json = "1.0.59"
+hyper = "0.13"
+tokio = { version = "0.2", features = ["full"] }
+lazy_static = "1.4.0"
+futures = "0.3.6"
+rusqlite = "0.24.1"
