@@ -1,6 +1,3 @@
-#[allow(unused, unused_parens)]
-
-use std::convert::Infallible;
 use core::str::FromStr;
 use std::convert::From;
 
@@ -14,12 +11,11 @@ use crate::utils::{is_json_request, json_message, parse_http_body_to_json, parse
 use crate::response::HTTPResponse;
 use crate::db::MockingRule;
 
-/// View for handling creating mocking rules, which should be called 
-/// statically only. Initializing function is `create`.
+/// View for handling mocking rules, which should
+/// be called statically only. Initializing function
+/// is `create`, `delete` and `default`.
 pub struct RuleView {}
 impl RuleView {
-    // TODO: Create mechanism for preventing creating multiple MockingRules with the same request data.
-
     fn get_json_request_url(
         parsed_json: &JsonValue,
         error_messages: &mut Vec<String>
@@ -329,12 +325,12 @@ impl RuleView {
     }
 
     pub async fn default(req: Request<Body>) -> Result<Response<Body>, HTTPResponse> {
-        //! Hnadles requests, which will be possibly resent to target, waits for response, and returns the response.
-        // Check if can pass...
+        //! Hnadles requests, which will be possibly resent to target, waits
+        //! for response, and returns the response.
         
         let is_json_request : bool = Self::validate_rule_request(&req).is_ok();
 
-        // TODO: Optimize
+        // TODO: Optimize!!!
         let req_uri = req.uri().clone();
         let method = req.method().clone();
         let headers = req.headers().clone();
@@ -356,7 +352,7 @@ impl RuleView {
                 &Some(req_uri.to_string()),
                 &req_uri.query().map(|o|o.to_owned()),
                 &Some(method.clone()),
-                &(if body != "" { Some(body) } else { None })  // parsed_request_body
+                &(if body != "" { Some(body) } else { None })
             ).map_err(
                 |error|
                     HTTPResponse{
@@ -371,7 +367,10 @@ impl RuleView {
                             StatusCode::from_u16(
                                 rule.response_status_code as u16
                             ).unwrap_or_else(
-                                // This happens if data are corrupted. Make sure we can store only valid status codes into DB.
+                                /*
+                                    This happens if data are corrupted. Make sure
+                                    we can store only valid status codes into DB.
+                                */
                                 |e| panic!(e.to_string())
                             )
                         )
@@ -393,11 +392,8 @@ impl RuleView {
             }
 
         }
-
-        // return Ok(Response::new(Body::from("DEBUG!")));
         
         let client = Client::new();
-        // use http::{Request, Response};
 
         let target_uri = Uri::builder()
             .scheme(Scheme::HTTP)
@@ -419,7 +415,6 @@ impl RuleView {
                 "Host", HeaderValue::from_static(&**settings::TARGET_HOST)
             );
         }
-
         
         match client.request(proxy_request).await {
             Ok(mut r) => {
@@ -435,7 +430,4 @@ impl RuleView {
             }
         }
     }
-
 }
-
-
