@@ -328,8 +328,6 @@ impl RuleView {
         //! Hnadles requests, which will be possibly resent to target, waits
         //! for response, and returns the response.
         
-        let is_json_request : bool = Self::validate_rule_request(&req).is_ok();
-
         // TODO: Optimize!!!
         let req_uri = req.uri().clone();
         let method = req.method().clone();
@@ -345,7 +343,7 @@ impl RuleView {
                 }
         )?;
 
-        if settings::INTERCEPTABLE_METHODS.contains(&method) && is_json_request{
+        if settings::INTERCEPTABLE_METHODS.contains(&method){
             let body = request_body.clone().trim().to_owned();
 
             match MockingRule::find(
@@ -374,6 +372,10 @@ impl RuleView {
                                 |e| panic!(e.to_string())
                             )
                         )
+                        .header("Access-Control-Allow-Origin", "*")
+                        .header("Access-Control-Allow-Headers", "*")
+                        .header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, HEAD, OPTIONS")
+                        .header("Server", "Rockery - Rust Mocking Gateway")
                         .header("X-Mocked", "1")
                         .header("Content-Type", "application/json; charset=UTF-8")
                         .body(
@@ -390,7 +392,6 @@ impl RuleView {
                 },
                 None => () 
             }
-
         }
         
         let client = Client::new();
